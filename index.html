@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>To-Do App</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #667eea, #764ba2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      width: 350px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input {
+      width: 70%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 5px;
+      color: white;
+      background: #667eea;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #5a67d8;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 15px;
+    }
+
+    li {
+      background: #f4f4f4;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    li button {
+      background: #e53e3e;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+
+    li button:hover {
+      background: #c53030;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>To-Do List</h1>
+
+    <input type="text" id="taskInput" placeholder="Enter task">
+    <br>
+    <button onclick="addTask()">Add</button>
+    <button onclick="getTasks()">Show</button>
+
+    <ul id="taskList"></ul>
+  </div>
+
+  <script>
+    function addTask() {
+      const task = document.getElementById("taskInput").value;
+
+      if (!task) {
+        alert("Enter a task ❌");
+        return;
+      }
+
+      fetch(`http://localhost:3000/add?task=${task}`)
+        .then(res => res.text())
+        .then(data => {
+          alert(data);
+          document.getElementById("taskInput").value = "";
+          getTasks();
+        })
+        .catch(err => console.error(err));
+    }
+
+    function getTasks() {
+      fetch('http://localhost:3000/list')
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("taskList");
+          list.innerHTML = "";
+
+          data.forEach(task => {
+            const li = document.createElement("li");
+            li.textContent = task.name;
+
+            const btn = document.createElement("button");
+            btn.textContent = "Delete";
+            btn.onclick = () => deleteTask(task._id);
+
+            li.appendChild(btn);
+            list.appendChild(li);
+          });
+        })
+        .catch(err => console.error(err));
+    }
+
+    function deleteTask(id) {
+      fetch(`http://localhost:3000/delete?id=${id}`)
+        .then(res => res.text())
+        .then(data => {
+          alert(data);
+          getTasks();
+        })
+        .catch(err => console.error(err));
+    }
+
+    window.onload = getTasks;
+  </script>
+
+</body>
+</html>
